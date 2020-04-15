@@ -13,6 +13,12 @@
 #ifndef PARSE_OUTPUT
 #define PARSE_OUTPUT 
 #endif
+#ifndef STACK_OUTPUT
+#define STACK_OUTPUT 
+#endif
+#ifndef EVAL_OUTPUT
+#define EVAL_OUTPUT 
+#endif
 
 //C preprocessor prototype function declaration
 int addOperands(int,int);
