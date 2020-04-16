@@ -31,18 +31,25 @@ Then follow prompts prompts delivered by program.
 
 No initial configuration is required. 
 Dependecies are handled through makefile.
-Simply run
+Simply run (in local project directory)
 ```shell
 make clean
 make
 ```
-in local project directory
 
 ## Features
-
+* Minimum features (met) dual operand entries supported for all following operations:
 * Addition, Subtraction, Multiplication, division, and exponentiation are supported.
 * Load csv file (comma delimmited) file to evaluate lots of expressions
 * ~Some~ algorithm analysis and timing done 
+
+## Features in progress (some for fun)
+* Expression tree validation: in order traversal will fail currently with higher priority operations farther down
+* parenthesis/ priority grouping
+* Big number math. Currently loosely supported but I think it would be neat for it to handle the omega large numbers (100 digits + etc) using some algorithms I learned to implement of FPGA
+* File output.
+* Multi-File support
+* Basic algebra
 
 ## Example usage
 
@@ -55,6 +62,15 @@ In order to utilize File IO pass a csv file as an argument to AParser.
 "Output: 2"
 "Output: 3"
 ```
+* BIG TEST ~warning.. around 4 million records. algorithm test
+```shell
+"./AParser ./testFiles/bigTest.csv"
+"..Debug output"
+"Output: 2"
+"Output: 3"
+```
+very rough benchmark: i7 intel cpu finishes ~4 million records 60 seconds
+(the simplest expressions e.g. 2+2, 2-2 etc.)
 
 In order to utilize traditional CLI expression input: run program without any arguments
 

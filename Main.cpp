@@ -10,7 +10,7 @@
 #include <iostream>
 #include <cstdlib> // for EXIT_SUCCESS and EXIT_FAILURE status codes
 #include <string>
-#include "ExpressionEval.cpp"
+// #include "ExpressionEval.cpp"
 #include "FileIO.cpp"
 #include <stdlib.h> 
 #include "AParser.h"
@@ -39,7 +39,7 @@ int main(int argc, char *argv[]){
     }
     else if(argc < 2){
         //only command argument was passed to shell. Start program in traditional mode
-        eval.receiveExpression(); //ask for expression
+        eval.receiveCliExpression(); //ask for expression
     }
     return 0;
 }

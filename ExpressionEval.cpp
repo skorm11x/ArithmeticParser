@@ -11,7 +11,8 @@
 #include <string>
 #include <cctype>
 #include <bits/stdc++.h> 
-#include <math.h> 
+#include <math.h>
+#include <chrono>  
 #include "CliDialog.cpp"
 #include "AParser.h"
 class ExpressionEval{
@@ -331,7 +332,7 @@ class ExpressionEval{
                 double op1Node = rootNode->right->value;
                 double op2Node = rootNode->left->value;
                 double result  = performOperation(op1Node,op2Node,(char)rootNode->value);
-                std::cout << "RESULT: "<<result<<"\n";
+                std::cout << "Expresion:"<<op1Node<<(char)rootNode->value<<op2Node<<", RESULT: "<<result<<"\n";
             }
             inorderEvaluate(rootNode->right);
         };
@@ -411,7 +412,7 @@ class ExpressionEval{
     *  Function receive input expression and calls class functions
     *  to determine expression validity, parse expression, and calculate result
     */ 
-    void receiveExpression(){
+    void receiveCliExpression(){
         std::string expression;
         do{
             expression = dialog.askForExpression(isValid);
@@ -419,5 +420,15 @@ class ExpressionEval{
 
         }while(!isValid);   
         
+    }
+
+    void receiveFileExpression(std::string expression){
+        //auto start = std::chrono::high_resolution_clock::now(); 
+        parseExpression(expression);
+        // auto stop = std::chrono::high_resolution_clock::now(); 
+        // auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+        // #ifdef TIME_CLI_OUTPUT
+        //     std::cout<< "Time take: "<<duration.count()<<" uS \n";
+        // #endif
     }
 };
