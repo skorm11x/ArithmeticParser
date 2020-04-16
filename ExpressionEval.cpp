@@ -1,9 +1,19 @@
+/*
+ ********************************************************************
+ *                         ExpressionEval.cpp                       *
+ * Explanation: sanitize, parse, build expression tree, and compute *
+ * Author: Christopher J. Kosik  16-Apr-2019 (current)              *          
+ * See included Readme.md file for details.                         *
+ ********************************************************************
+*/
+
 #include <iostream>
 #include <string>
 #include <cctype>
 #include <bits/stdc++.h> 
+#include <math.h> 
 #include "CliDialog.cpp"
-#include "ArithmeticParser.h"
+#include "AParser.h"
 class ExpressionEval{
     CliDialog dialog;
 
@@ -15,9 +25,9 @@ class ExpressionEval{
         expressTree* left, *right;  //left and right pointers to nodes, null for leaf..
     }; 
 
-    char validChars[22] = {'+','*','-','/','(',')','{','}','[',']','0','1','2','3','4','5','6','7','8','9','.',','};
+    char validChars[23] = {'+','*','-','/','(',')','{','}','[',']','0','1','2','3','4','5','6','7','8','9','.',',','^'};
     char priorityChars[6] = {'(',')','{','}','[',']'};
-    char operatorChars[4] = {'+','*','-','/'};
+    char operatorChars[5] = {'+','*','-','/','^'};
 
     //global flag for valid or invalid expression, updated or not during parsing
     int isValid = 1; //expression valid by default
@@ -100,6 +110,13 @@ class ExpressionEval{
                                     isClean = 0;
                                     return isClean; //stop evaluating illegal input
                             }
+                            else if (expression[i-1] == operatorChars[4] || expression[i+1] == operatorChars[4]){
+                                #ifdef PARSE_OUTPUT
+                                    std::cout << "Adjacent with / operators: "<< expression[i-1] << ", "<<expression[i] << ", "<< expression[i+1]<< "\n";
+                                #endif
+                                    isClean = 0;
+                                    return isClean; //stop evaluating illegal input
+                            }
 
                         } 
                     }
@@ -125,7 +142,7 @@ class ExpressionEval{
             std::cout << "isValid value: "<< isValid << "\n";
         #endif
         std::stack <expressTree *> operand_stack;
-        expressTree *op1Node, *op2Node, *operatorNode, *rootNode; //right: 1, left: 2
+        expressTree *op1Node, *op2Node, *operatorNode, *rootNode, *addNode; //right: 1, left: 2
         //parseExpression proceeds once input has been sanitizied
         if(isValid){
             //input has been sanitized, only validChars are present
@@ -171,7 +188,10 @@ class ExpressionEval{
 
                }
                //character is not a priority indicator (parenthesis)
-               if(isdigit(expression[i]) || expression[i] == ',' || expression[i] == '.'){
+               if(isdigit(expression[i]) || expression[i] == ',' || expression[i] == '.'||
+                 (expression[i] == operatorChars[0] || expression[i] == operatorChars[1] ||
+                  expression[i] == operatorChars[2] || expression[i] == operatorChars[3] ||
+                  expression[i] == operatorChars[4])){
 
                    //the character is not an operator, so we need to build the operand 
                    double buildOperand = 0;
@@ -181,10 +201,11 @@ class ExpressionEval{
 
                    while(i < expression.length() && (isdigit(expression[i]) || expression[i] == ',' || expression[i] == '.')){
                        //**ONLY ACCURATE DOWN TO 1000TH PLACE DECIMAL**
-
-                       //just ignore comma's although input may be input that way
-                       //decimals will indicate building double value
-                       //because this is in base 10 (assumption) every value entered will be multiple of 10 difference/ shift
+                       /*
+                       just ignore comma's although input may be input that way
+                       decimals will indicate building double value
+                       because this is in base 10 (assumption) every value entered will be multiple of 10 difference/ shift
+                       */
                        if(isdigit(expression[i]) && decimalFlag == 0){
                             buildOperand = (buildOperand*10) + (expression[i] - '0'); //subtract 0 from end to convert to integer
                        }
@@ -206,8 +227,12 @@ class ExpressionEval{
                     #endif
                     //we have succesffully built an operand, push to stack, build new node
                     if(state == 2){
-                        //we have found the second operand, and are ready to build the tree
-                        //operator at 1 position, op1 at position 0
+                        /*
+                            If we are in state 2, then we have 2 items in our stack, which due to sanitization,
+                            must be operand and operator.
+
+
+                        */
                         #ifdef STACK_OUTPUT
                             std::cout << "Op2 check Stack size: "<< operand_stack.size() <<", ";
                         #endif
@@ -217,11 +242,13 @@ class ExpressionEval{
                         #endif
                         operand_stack.pop();
                         op1Node = operand_stack.top();
+                        op1Node->isLeaf = true;
                         #ifdef STACK_OUTPUT
                             std::cout << "op1 Node: " << op1Node->value <<", ";
                         #endif
                         operand_stack.pop();
                         op2Node = newNode(buildOperand);
+                        op2Node->isLeaf = true;
                         #ifdef STACK_OUTPUT
                             std::cout << "op2 Node: "<< op2Node->value <<"\n";
                         #endif
@@ -231,59 +258,83 @@ class ExpressionEval{
                         //we now have handle of all 3 nodes for valid expression, create tree 
                         operatorNode->right = op1Node;
                         operatorNode->left = op2Node;
+                        operatorNode->isLeaf = false;
 
                         //add local tree to stack 
                         operand_stack.push(operatorNode);
                         state = 0;
                     }
                     else if (state == 0){
-                        state = 1;
-                        op1Node = newNode(buildOperand);
-                        #ifdef STACK_OUTPUT
-                            std::cout << "op1 Node state 0: " << op1Node->value <<"\n";
-                        #endif
-                        operand_stack.push(op1Node);
+                            state = 1;
+                            op1Node = newNode(buildOperand);
+                            #ifdef STACK_OUTPUT
+                                std::cout << "op1 Node state 0: " << op1Node->value <<"\n";
+                            #endif
+                            operand_stack.push(op1Node);
                     }
                     //after finding the first operand, we should find an operator before 2nd operand
 
                    
                }
-               if((expression[i] == operatorChars[0] || expression[i] == operatorChars[1] ||
-                  expression[i] == operatorChars[2] || expression[i] == operatorChars[3]) && state == 1){
-                      //we found an operator, pop the two operands on stack and build expression tree
-                      state = 2;
-                    #ifdef STACK_OUTPUT
-                        std::cout << "stack size : "<< operand_stack.size() <<"\n";
-                    #endif
-                    operatorNode = newNode(expression[i]); //create node with value of operator
-                    operand_stack.push(operatorNode); //char pushed
-                    //get the values of the other operator nodes from the stack
-                    // rightNode = operand_stack.top(); //get operand 2 for right node
-                    // operand_stack.pop(); //remove from stack
-                    // leftNode = operand_stack.top(); //get operand 1 for left node
-                    // operand_stack.pop(); //remove from stack
+               if(state == 1){
+                   /*
+                    * 1st case: we found an operator and only 1 operand exists e.g.: 1+; push into stack and wait for second operator
+                    * 2nd case 
+                    */ 
+                      
+                    if(expression[i] == operatorChars[0] || expression[i] == operatorChars[1] ||
+                       expression[i] == operatorChars[2] || expression[i] == operatorChars[3] ||
+                       expression[i] == operatorChars[4]){
+                            state = 2;
+                            #ifdef STACK_OUTPUT
+                                std::cout << "stack size : "<< operand_stack.size() <<"\n";
+                            #endif
+                            operatorNode = newNode(expression[i]); //create node with value of operator
+                            operand_stack.push(operatorNode); //char pushed
+                            //get the values of the other operator nodes from the stack
+                            // rightNode = operand_stack.top(); //get operand 2 for right node
+                            // operand_stack.pop(); //remove from stack
+                            // leftNode = operand_stack.top(); //get operand 1 for left node
+                            // operand_stack.pop(); //remove from stack
+                       }
+                       else{
+                           //it is an operand being appended to an exisitng operator in addNode
+                        //    expressTree *tempNode = newNode(buildOperand);  
+                        //    addNode->right = tempNode;
+                        //    state = 0;
+                       }
 
 
                   }
                
            }
-
             rootNode = operand_stack.top();
             operand_stack.pop();
-            op1Node = rootNode->right;
-            op2Node = rootNode->left;
-            
-            #ifdef EVAL_OUTPUT
-                std::cout << "rootNode value "<<(char)rootNode->value<<" \n";
-                std::cout << "op1 value "<<op1Node->value<<" \n";
-                std::cout << "op2 value "<<op2Node->value<<" \n";
-            #endif
-
-            double result  = performOperation(op1Node->value,op2Node->value,(char)rootNode->value);
-            std::cout << "RESULT: "<<result<<"\n";
+            inorderEvaluate(rootNode);
             
         }
         
+
+    }
+
+    void inorderEvaluate(expressTree * rootNode){
+
+        //recursively traverse binary tree
+        //only execute for non leaf nodes (leaf nodes have no children...)
+        //because a operator 
+        if(rootNode != NULL){
+            inorderEvaluate(rootNode->left);
+            #ifdef EVAL_OUTPUT
+                std::cout << "Current Node eval: "<< rootNode->value << "\n";
+            #endif
+            if(!rootNode->isLeaf){
+                double op1Node = rootNode->right->value;
+                double op2Node = rootNode->left->value;
+                double result  = performOperation(op1Node,op2Node,(char)rootNode->value);
+                std::cout << "RESULT: "<<result<<"\n";
+            }
+            inorderEvaluate(rootNode->right);
+        };
 
     }
 
@@ -305,6 +356,8 @@ class ExpressionEval{
             break;
             case '/':
                 result = (operandOne / operandTwo);
+            case '^':
+                result = (pow(operandOne,operandTwo));    
             break;
         }
 
@@ -326,6 +379,29 @@ class ExpressionEval{
             break;
             case '/':
                 result = (operandOne / operandTwo);
+            case '^':
+                result = (pow(operandOne,operandTwo));  
+            break;
+        }
+        return result;
+    }
+
+    long double performOperation(long double operandOne, long double operandTwo, char operatorSelect){
+        long double result = 0;
+        switch(operatorSelect){
+            case '+':
+                result = (operandOne + operandTwo);
+            break;
+            case '*':
+                result = (operandOne * operandTwo);
+            break;
+            case '-':
+                result = (operandOne - operandTwo);
+            break;
+            case '/':
+                result = (operandOne / operandTwo);
+            case '^':
+                result = (pow(operandOne,operandTwo));      
             break;
         }
         return result;

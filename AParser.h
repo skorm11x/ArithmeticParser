@@ -19,9 +19,6 @@
 #ifndef EVAL_OUTPUT
 #define EVAL_OUTPUT 
 #endif
-
-//C preprocessor prototype function declaration
-int addOperands(int,int);
-int multOperands(int,int);
-double addOperands(double,double);
-double multOperands(double,double);
+#ifndef FILE_EXT
+#define FILE_EXT ".csv" 
+#endif
