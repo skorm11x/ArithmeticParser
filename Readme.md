@@ -28,7 +28,7 @@ AParser "./AParser.exe"
 Then follow prompts prompts delivered by program.
 
 ### Building
-
+Unix:
 No initial configuration is required. 
 Dependecies are handled through makefile.
 Simply run (in local project directory)
@@ -36,6 +36,10 @@ Simply run (in local project directory)
 make clean
 make
 ```
+
+Windows:
+You will need CyGwin, g++ compiler. (unix emulator)
+In the future I will open this up with MsVisualStudio and configure it.
 
 ## Features
 * Minimum features (met) dual operand entries supported for all following operations:
