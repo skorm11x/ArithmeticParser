@@ -1,6 +1,5 @@
-//comment out to disable currently
 #ifndef TIME_CLI_OUTPUT
-#define TIME_CLI_OUTPUT 0 //boolean false default
+#define TIME_CLI_OUTPUT 
 #endif
 
 // #ifndef VERBOSE_CLI_OUTPUT
@@ -20,6 +19,9 @@
 // #ifndef EVAL_OUTPUT
 // #define EVAL_OUTPUT 
 // #endif
+#ifndef PRIORITY_DEBUG
+#define PRIORITY_DEBUG
+#endif
 #ifndef FILE_EXT
 #define FILE_EXT ".csv" 
 #endif

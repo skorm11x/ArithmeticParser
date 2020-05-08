@@ -34,6 +34,7 @@ class FileIO{
                 if(infile.is_open()){
                     //file is open, read line by line for evaluation
                     //processFile(infile);
+                    std::cout << "Processing file...\n";
                     auto start = std::chrono::high_resolution_clock::now();
                     for(std::string lineData; getline(infile, lineData);){
                         //received line must be comma delimmited and expression sent to ExpressionEval for evaluation
@@ -52,8 +53,9 @@ class FileIO{
                     auto stop = std::chrono::high_resolution_clock::now(); 
                     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
                     #ifdef TIME_CLI_OUTPUT
-                        std::cout<< "Time take: "<<duration.count()<<" uS \n";
+                        std::cout<< "Total File processing time take: "<<duration.count()<<" uS \n";
                     #endif
+                    std::cout << "File processing complete for "<<filename<<"\n";
                 }
                 else{
                     std::cout << filename<<" File could not be located! Please reload.\n";

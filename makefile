@@ -1,10 +1,22 @@
 all: AParser 
 
-#target requirements for Arithmetic Parser, normal binary + windows exe
-AParser: Main.cpp CliDialog.cpp ExpressionEval.cpp FileIO.cpp
-	g++ -o AParser Main.cpp CliDialog.cpp ExpressionEval.cpp FileIO.cpp 	 
+AParser: Main.o FileIO.o ExpressionEval.o CliDialog.o
+	g++ -g -o AParser Main.o FileIO.o ExpressionEval.o CliDialog.o
 
-#remove the binary file
-#TODO: generate seperate object files
+Main.o: Main.cpp FileIO.o AParser.h
+	g++ -g -c Main.cpp 
+
+FileIO.o: FileIO.cpp ExpressionEval.o AParser.h
+	g++ -g -c FileIO.cpp
+
+ExpressionEval.o: ExpressionEval.cpp CliDialog.o AParser.h
+	g++ -g -c ExpressionEval.cpp
+
+CliDialog.o: CliDialog.cpp AParser.h
+	g++ -g -c CliDialog.cpp
+
+cleanObj:
+	rm -f Main.o FileIO.o ExpressionEval.o CliDialog.o
+
 clean:
-	rm -f AParser AParser.exe
+	rm -f Main.o FileIO.o ExpressionEval.o CliDialog.o AParser

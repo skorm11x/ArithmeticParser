@@ -29,9 +29,9 @@ class ExpressionEval{
         expressTree* left, *right;  //left and right pointers to nodes, null for leaf..
     }; 
 
-    char validChars[23] = {'+','*','-','/','(',')','{','}','[',']','0','1','2','3','4','5','6','7','8','9','.',',','^'};
+    char validChars[23] = {'+','*','-','/','(',')','{','}','[',']','0','1','2','3','4','5','6','7','8','9','.','^'};
     char priorityChars[6] = {'(',')','{','}','[',']'};
-    char operatorChars[5] = {'+','*','-','/','^'};
+    char operatorChars[5] = {'+','-','*','/','^'}; 
 
     //global flag for valid or invalid expression, updated or not during parsing
     int isValid = 1; //expression valid by default
@@ -44,6 +44,7 @@ class ExpressionEval{
     { 
         expressTree *temp = new expressTree; 
         temp->left = temp->right = NULL; 
+        temp->isLeaf = false; 
         temp->value = v; 
         return temp; 
     };
@@ -159,80 +160,20 @@ class ExpressionEval{
 
                 Then, apply order of operations priority
                 Shunting algorithm utilizing 2 stacks runs O(1) time really is "best" way to do this
+
+                Priorities:
+                4: priorityChars[6] = {'(',')','{','}','[',']'};
+                3: ^ (exponetioation)
+                2: * ,/,(mod)( multiply or modulo/divide, though currently unsupported)
+                1: +, -
+
+                Concept: we painstakingly go through each expression and find our priorities,
+                where we want the highest priority statements to be all the way at the bottom of our tree to be evaluated
+                first by our inorder traversal and evaluate
+
+                So, we must find all rank 5 priority statements and place at bottom, and then 4 and so on.  
             */
 
-<<<<<<< HEAD
-           int inPriority = 0;// flag to indicate whether we are building expression inside parenthesis etc.
-           int state = 0; //track num of operand/operator
-           for(int i = 0; i< expression.length(); ++i){
-        
-               for(int j = 0; j<(sizeof(priorityChars)/sizeof(priorityChars[0])); ++j){
-                    if(expression[i] == priorityChars[j]){
-                        //we found a bracket, parenthesis, brace etc.
-
-                        //because we are reading from left to right we expect (require) the 
-                        //priority indicator to be an open: (, {, [
-                        //valid characters and operators but incorrect priority sequence otherwise
-                        if(expression[i] == '{' || expression[i] == '(' || expression[i] == '['){
-                            //beginning of a priority segment found
-                            //guaranteed correct chars + operator sequencing so recursivly create smaller problem, add to stack
-                            #ifdef PARSE_OUTPUT
-                                    std::cout << "Start Priority char found: "<< expression[i] << "\n";
-                            #endif
-
-                            //
-                        }
-                        else{
-                            //end of a priority segment found
-                            #ifdef PARSE_OUTPUT
-                                    std::cout << "End Priority char found: "<< expression[i] << "\n";
-                            #endif
-                        }
-                    }
-
-
-               }
-               //character is not a priority indicator (parenthesis)
-               if(isdigit(expression[i]) || expression[i] == ',' || expression[i] == '.'||
-                 (expression[i] == operatorChars[0] || expression[i] == operatorChars[1] ||
-                  expression[i] == operatorChars[2] || expression[i] == operatorChars[3] ||
-                  expression[i] == operatorChars[4])){
-
-                   //the character is not an operator, so we need to build the operand 
-                   double buildOperand = 0;
-                   int decimalFlag  = 0; //flag set for handling values after decimal place
-                   double valueToAdd = 0; // hold a value that will divided by each time
-                   double divisorValue = 1;// hold a value that will divided by each time
-
-                   while(i < expression.length() && (isdigit(expression[i]) || expression[i] == ',' || expression[i] == '.')){
-                       //**ONLY ACCURATE DOWN TO 1000TH PLACE DECIMAL**
-                       /*
-                       just ignore comma's although input may be input that way
-                       decimals will indicate building double value
-                       because this is in base 10 (assumption) every value entered will be multiple of 10 difference/ shift
-                       */
-                       if(isdigit(expression[i]) && decimalFlag == 0){
-                            buildOperand = (buildOperand*10) + (expression[i] - '0'); //subtract 0 from end to convert to integer
-                       }
-                       else if(isdigit(expression[i]) && decimalFlag == 1){
-                           divisorValue = divisorValue*10;
-                           valueToAdd = ((double)expression[i] - '0')/divisorValue;
-                           buildOperand = buildOperand + (valueToAdd);
-                       }
-                       else if(expression[i] == '.'){
-                           //when decimal point is encountered now data is essentially growing in the opposite direction, with decimal point as origin
-                           //buildOperand = buildOperand + 0.0; //
-                           decimalFlag = 1;
-                       }
-
-                       ++i;
-                   }
-                    #ifdef PARSE_OUTPUT
-                            std::cout << "Build Operand value: "<< buildOperand << "\n";
-                    #endif
-                    //we have succesffully built an operand, push to stack, build new node
-                    if(state == 2){
-=======
            int inPriority = 0;// flag to indicate if we are currently inside priority (,{,[
            int parathesisCnt = 0;
            int state = 0; //track num of operand/operator
@@ -285,94 +226,77 @@ class ExpressionEval{
                     //move the character forward to capture all the numbers to create operand
                     while(i < expression.length() && (isdigit(expression[i]) || expression[i] == '.')){
                         //**ONLY ACCURATE DOWN TO 1000TH PLACE DECIMAL**
->>>>>>> 88ccb71... Fixing git upload, second temporary submission
                         /*
-                            If we are in state 2, then we have 2 items in our stack, which due to sanitization,
-                            must be operand and operator.
-
-
+                        just ignore comma's although input may be input that way
+                        decimals will indicate building double value
+                        because this is in base 10 (assumption) every value entered will be multiple of 10 difference/ shift
                         */
-                        #ifdef STACK_OUTPUT
-                            std::cout << "Op2 check Stack size: "<< operand_stack.size() <<", ";
-                        #endif
-                        operatorNode = operand_stack.top();
-                        #ifdef STACK_OUTPUT
-                            std::cout << "Operator Node: " << (char)operatorNode->value <<", ";
-                        #endif
-                        operand_stack.pop();
-                        op1Node = operand_stack.top();
-                        op1Node->isLeaf = true;
-                        #ifdef STACK_OUTPUT
-                            std::cout << "op1 Node: " << op1Node->value <<", ";
-                        #endif
-                        operand_stack.pop();
-                        op2Node = newNode(buildOperand);
-                        op2Node->isLeaf = true;
-                        #ifdef STACK_OUTPUT
-                            std::cout << "op2 Node: "<< op2Node->value <<"\n";
-                        #endif
-                        #ifdef STACK_OUTPUT
-                            std::cout << "Stack size: "<< operand_stack.size() <<"\n ";
-                        #endif
-                        //we now have handle of all 3 nodes for valid expression, create tree 
-                        operatorNode->right = op1Node;
-                        operatorNode->left = op2Node;
-                        operatorNode->isLeaf = false;
+                        if(isdigit(expression[i]) && decimalFlag == 0){
+                                buildOperand = (buildOperand*10) + (expression[i] - '0'); //subtract 0 from end to convert to integer
+                        }
+                        else if(isdigit(expression[i]) && decimalFlag == 1){
+                            divisorValue = divisorValue*10;
+                            valueToAdd = ((double)expression[i] - '0')/divisorValue;
+                            buildOperand = buildOperand + (valueToAdd);
+                        }
+                        else if(expression[i] == '.'){
+                            //when decimal point is encountered now data is essentially growing in the opposite direction, with decimal point as origin
+                            //buildOperand = buildOperand + 0.0; //
+                            decimalFlag = 1;
+                        }
 
-                        //add local tree to stack 
-                        operand_stack.push(operatorNode);
-                        state = 0;
+                        ++i;
                     }
-                    else if (state == 0){
-                            state = 1;
-                            op1Node = newNode(buildOperand);
+                        #ifdef PARSE_OUTPUT
+                                std::cout << "Build Operand value: "<< buildOperand << "\n";
+                        #endif
+                        //we have succesffully built an operand, push to stack, build new node
+                        if(state == 2){
+                            /*
+                                If we are in state 2, then we have 2 items in our stack, which due to sanitization,
+                                must be operand and operator.
+                                Thus, update the left and right children for tree creation
+                            */
                             #ifdef STACK_OUTPUT
-                                std::cout << "op1 Node state 0: " << op1Node->value <<"\n";
+                                std::cout << "Op2 check Stack size: "<< operand_stack.size() <<", ";
                             #endif
-                            operand_stack.push(op1Node);
-                    }
-                    //after finding the first operand, we should find an operator before 2nd operand
-
-                   
-               }
-               if(state == 1){
-                   /*
-                    * 1st case: we found an operator and only 1 operand exists e.g.: 1+; push into stack and wait for second operator
-                    * 2nd case 
-                    */ 
-                      
-                    if(expression[i] == operatorChars[0] || expression[i] == operatorChars[1] ||
-                       expression[i] == operatorChars[2] || expression[i] == operatorChars[3] ||
-                       expression[i] == operatorChars[4]){
-                            state = 2;
+                            operatorNode = operand_stack.top(); //the last value pushed was an operator
                             #ifdef STACK_OUTPUT
-                                std::cout << "stack size : "<< operand_stack.size() <<"\n";
+                                std::cout << (char)operatorNode->value <<", ";
                             #endif
-<<<<<<< HEAD
-                            operatorNode = newNode(expression[i]); //create node with value of operator
-                            operand_stack.push(operatorNode); //char pushed
-                            //get the values of the other operator nodes from the stack
-                            // rightNode = operand_stack.top(); //get operand 2 for right node
-                            // operand_stack.pop(); //remove from stack
-                            // leftNode = operand_stack.top(); //get operand 1 for left node
-                            // operand_stack.pop(); //remove from stack
-                       }
-                       else{
-                           //it is an operand being appended to an exisitng operator in addNode
-                        //    expressTree *tempNode = newNode(buildOperand);  
-                        //    addNode->right = tempNode;
-                        //    state = 0;
-                       }
-
-
-                  }
-               
-           }
-            rootNode = operand_stack.top();
-            operand_stack.pop();
-            inorderEvaluate(rootNode);
-            
-=======
+                            operand_stack.pop();
+                            op1Node = operand_stack.top(); //the second value pushed was an operand
+                            //op1Node->isLeaf = true;
+                            if(op1Node->value == operatorChars[0] || op1Node->value == operatorChars[1] ||
+                                op1Node->value == operatorChars[2] || op1Node->value == operatorChars[3] ||
+                                op1Node->value == operatorChars[4]){
+                                    //we MUST check whether the left or the right are * to set isLeaf
+                                    op1Node->isLeaf = false;
+                                }
+                            else{
+                                    op1Node->isLeaf = true;
+                            }
+                            #ifdef STACK_OUTPUT
+                                std::cout << op1Node->value <<", ";
+                            #endif
+                            operand_stack.pop();
+                            op2Node = newNode(buildOperand); //capture the current operand
+                            //op2Node->isLeaf = true;
+                            if(op2Node->value == operatorChars[0] || op2Node->value == operatorChars[1] ||
+                                op2Node->value == operatorChars[2] || op2Node->value == operatorChars[3] ||
+                                op2Node->value == operatorChars[4]){
+                                    //we MUST check whether the left or the right are * to set isLeaf
+                                    op2Node->isLeaf = false;
+                                }
+                            else{
+                                    op2Node->isLeaf = true;
+                            }
+                            #ifdef STACK_OUTPUT
+                                std::cout << op2Node->value <<"\n";
+                            #endif
+                            #ifdef STACK_OUTPUT
+                                std::cout << "Stack size: "<< operand_stack.size() <<"\n ";
+                            #endif
                             //we now have handle of all 3 nodes for valid expression, create tree 
                             operatorNode->left = op1Node;
                             operatorNode->right = op2Node;
@@ -434,15 +358,11 @@ class ExpressionEval{
             inorderEvaluate(rootNode, 3); //pop the pointer to the root node
             inorderEvaluate(rootNode, 2);
             inorderEvaluate(rootNode, 1);
->>>>>>> 88ccb71... Fixing git upload, second temporary submission
         }
         
 
     }
 
-<<<<<<< HEAD
-    void inorderEvaluate(expressTree * rootNode){
-=======
     /**
      * Function receives pointer to root node.
      */ 
@@ -460,30 +380,29 @@ class ExpressionEval{
         // values. 
         //
 
->>>>>>> 88ccb71... Fixing git upload, second temporary submission
 
-        //recursively traverse binary tree
-        //only execute for non leaf nodes (leaf nodes have no children...)
-        //because a operator 
         if(rootNode != NULL){
-<<<<<<< HEAD
-            inorderEvaluate(rootNode->left);
-=======
 
             //Inorder traverse all the way to the bottom of the left child of tree
             inorderEvaluate(rootNode->left, currPriority);
->>>>>>> 88ccb71... Fixing git upload, second temporary submission
             #ifdef EVAL_OUTPUT
-                std::cout << "Current Node eval: "<< rootNode->value << "\n";
+                std::cout<<"Node val: "<<rootNode->value<<"\n";
+                std::cout<<"IsLeaf? : "<<rootNode->isLeaf<<"\n";
+                if(rootNode->left != NULL){
+                    std::cout<<"LEFT: "<<rootNode->left->value<<"\n";
+                }
+                else if(rootNode->left == NULL){
+                    std::cout<<"LEFT is null\n";
+                }
+                if(rootNode->right != NULL){
+                    std::cout<<"RIGHT: "<<rootNode->right->value<<"\n";
+                }
+                else if(rootNode->right == NULL){
+                    std::cout<<"RIGHT is null\n";
+                } 
             #endif
             //we are at the bottom of Binary tree, start checking operators
             if(!rootNode->isLeaf){
-<<<<<<< HEAD
-                double op1Node = rootNode->right->value;
-                double op2Node = rootNode->left->value;
-                double result  = performOperation(op1Node,op2Node,(char)rootNode->value);
-                std::cout << "Expresion:"<<op1Node<<(char)rootNode->value<<op2Node<<", RESULT: "<<result<<"\n";
-=======
                 if(currPriority == 3){
                     //handle exponents
                     if(rootNode->value == '^'){
@@ -602,7 +521,6 @@ class ExpressionEval{
                 // //std::cout << "RESULT: "<<result<<"\n";
                 // std::cout << "Expresion step:"<<op1Node<<" "<<(char)rootNode->value<<" "<<op2Node<<" RESULT: "<<result<<"\n";
                 // rootNode->value = result;
->>>>>>> 88ccb71... Fixing git upload, second temporary submission
             }
             inorderEvaluate(rootNode->right, currPriority);
             //we have reached the end of inorder traversal.
@@ -614,6 +532,9 @@ class ExpressionEval{
 
     public:
 
+    /**
+     * Group of overloaded functions containing, and supporting, all of our operators
+     */ 
     int performOperation(int operandOne, int operandTwo, char operatorSelect){
         int result = 0;
         switch(operatorSelect){
@@ -693,13 +614,17 @@ class ExpressionEval{
         
     }
 
+    /**
+     * Function receives line by line from csv file to sanitize and then parse.
+     * 
+     */ 
     void receiveFileExpression(std::string expression){
-        //auto start = std::chrono::high_resolution_clock::now(); 
+        auto start = std::chrono::high_resolution_clock::now(); 
         parseExpression(expression);
-        // auto stop = std::chrono::high_resolution_clock::now(); 
-        // auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-        // #ifdef TIME_CLI_OUTPUT
-        //     std::cout<< "Time take: "<<duration.count()<<" uS \n";
-        // #endif
+        auto stop = std::chrono::high_resolution_clock::now(); 
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+        #ifdef TIME_CLI_OUTPUT
+            std::cout<< "Time take single expression: "<<duration.count()<<" uS \n";
+        #endif
     }
 };
