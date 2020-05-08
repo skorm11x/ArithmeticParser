@@ -2,7 +2,7 @@
  *****************************************************************
  *                         Main.cpp                              *
  * Explanation: launch program in selected mode of operation     *
- * Author: Christopher J. Kosik  16-Apr-2019 (current)           *          
+ * Author: Christopher J. Kosik  1-May-2020 (current)           *          
  * See included Readme.md file for details.                      *
  *****************************************************************
 */
@@ -12,7 +12,7 @@
 #include <string>
 // #include "ExpressionEval.cpp"
 #include "FileIO.cpp"
-#include <stdlib.h> 
+#include <stdlib.h>
 #include "AParser.h"
 
 

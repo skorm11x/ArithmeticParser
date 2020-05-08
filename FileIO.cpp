@@ -2,7 +2,7 @@
  *********************************************************************
  *                         FileIO.cpp                                *
  * Explanation: Open specified csv file, obtain expression from line *
- * Author: Christopher J. Kosik  16-Apr-2019 (current)               *          
+ * Author: Christopher J. Kosik  1-May-2020 (current)               *          
  * See included Readme.md file for details.                          *
  *********************************************************************
 */

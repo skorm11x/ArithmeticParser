@@ -2,19 +2,22 @@
  ********************************************************************
  *                         ExpressionEval.cpp                       *
  * Explanation: sanitize, parse, build expression tree, and compute *
- * Author: Christopher J. Kosik  16-Apr-2019 (current)              *          
+ * Author: Christopher J. Kosik  1-May-2020 (current)              *          
  * See included Readme.md file for details.                         *
- ********************************************************************
+ *********************************************************** *********
 */
 
 #include <iostream>
+#include <stdio.h>
 #include <string>
 #include <cctype>
 #include <bits/stdc++.h> 
 #include <math.h>
 #include <chrono>  
+#include <cmath>
 #include "CliDialog.cpp"
 #include "AParser.h"
+
 class ExpressionEval{
     CliDialog dialog;
 
@@ -158,6 +161,7 @@ class ExpressionEval{
                 Shunting algorithm utilizing 2 stacks runs O(1) time really is "best" way to do this
             */
 
+<<<<<<< HEAD
            int inPriority = 0;// flag to indicate whether we are building expression inside parenthesis etc.
            int state = 0; //track num of operand/operator
            for(int i = 0; i< expression.length(); ++i){
@@ -228,6 +232,60 @@ class ExpressionEval{
                     #endif
                     //we have succesffully built an operand, push to stack, build new node
                     if(state == 2){
+=======
+           int inPriority = 0;// flag to indicate if we are currently inside priority (,{,[
+           int parathesisCnt = 0;
+           int state = 0; //track num of operand/operator
+            std::cout<<"Expression to evaluate: "<<expression<<"\n";
+            //add all remaining parts
+            for(int i = 0; i< expression.length(); ++i){
+                   for(int j = 0; j<(sizeof(priorityChars)/sizeof(priorityChars[0])); ++j){
+                        if(expression[i] == priorityChars[j]){
+                            //we found a bracket, parenthesis, brace etc.
+
+                            //because we are reading from left to right we expect (require) the 
+                            //priority indicator to be an open: (, {, [
+                            //valid characters and operators but incorrect priority sequence otherwise
+                            if(expression[i] == '{' || expression[i] == '(' || expression[i] == '['){
+                                //Ignore everything after, incrementing count for every new one encountered
+                                ++parathesisCnt;
+                                //look for (parathesisCnt # of }, ), or ] to "escape"
+                                //ex (2+23) : 1
+                                //((2+2)*5), ((2+2)1*5) where the second one has implicit multiplication!!
+                                //for purposes of program, ((2+2)1*5) is considered ILLEGAL. all operators must be explicit!
+                                //e.g ((2+2)*5) is valid and has 2 items where we always expect operators between nested
+                                //parenthesis (2+2+(3*4)) (redundant/ useless parenthesis but still)
+
+                                                        
+
+                            }
+                            else{
+                                --parathesisCnt;
+                                //we encountered the end of parenthesis, we need to add this **valid** expression
+                                // to our tree
+                            }
+
+
+                        }
+                   }
+            if(parathesisCnt <1){
+                //if count is greater than 1 we are inside a parenth, ignore.
+                //character is not a priority indicator (parenthesis)/ operator
+                if(isdigit(expression[i]) || expression[i] == '.'||
+                    !(expression[i] == operatorChars[0] || expression[i] == operatorChars[1] ||
+                    expression[i] == operatorChars[2] || expression[i] == operatorChars[3] ||
+                    expression[i] == operatorChars[4]))
+                    {
+                    //the character is not an operator, so we need to build the operand 
+                    double buildOperand = 0;
+                    int decimalFlag  = 0; //flag set for handling values after decimal place
+                    double valueToAdd = 0; // hold a value that will divided by each time
+                    double divisorValue = 1;// hold a value that will divided by each time
+
+                    //move the character forward to capture all the numbers to create operand
+                    while(i < expression.length() && (isdigit(expression[i]) || expression[i] == '.')){
+                        //**ONLY ACCURATE DOWN TO 1000TH PLACE DECIMAL**
+>>>>>>> 88ccb71... Fixing git upload, second temporary submission
                         /*
                             If we are in state 2, then we have 2 items in our stack, which due to sanitization,
                             must be operand and operator.
@@ -290,6 +348,7 @@ class ExpressionEval{
                             #ifdef STACK_OUTPUT
                                 std::cout << "stack size : "<< operand_stack.size() <<"\n";
                             #endif
+<<<<<<< HEAD
                             operatorNode = newNode(expression[i]); //create node with value of operator
                             operand_stack.push(operatorNode); //char pushed
                             //get the values of the other operator nodes from the stack
@@ -313,28 +372,240 @@ class ExpressionEval{
             operand_stack.pop();
             inorderEvaluate(rootNode);
             
+=======
+                            //we now have handle of all 3 nodes for valid expression, create tree 
+                            operatorNode->left = op1Node;
+                            operatorNode->right = op2Node;
+                            operatorNode->isLeaf = false;
+
+                            //add local tree to stack 
+                            operand_stack.push(operatorNode);
+                            state = 0;
+                        }
+                        else if (state == 0){
+                            //we are either building the first binary expression e.g. 1+1, or we have encountered
+                            //another operator and need to "add onto" the exisiting tree 
+                            // 1+1+1: 
+                            //       1
+                            //    +     1
+                            // 1     1
+                            //
+                                op1Node = newNode(buildOperand);
+                                #ifdef STACK_OUTPUT
+                                    std::cout << "op1 Node state 0: " << op1Node->value <<"\n";
+                                #endif
+                                operand_stack.push(op1Node);
+                                state = 1;
+                        }
+                        //after finding the first operand, we should find an operator before 2nd operand
+
+                    
+                }
+                if(state == 1 || state == 0){
+                    /*
+                        * First case: we found an operator following an operand and we are 
+                        * building a non chained expression e.g. 1+1
+                        */ 
+                        if(expression[i] == operatorChars[0] || expression[i] == operatorChars[1] ||
+                        expression[i] == operatorChars[2] || expression[i] == operatorChars[3] ||
+                        expression[i] == operatorChars[4]){
+                                state = 2; //look for an operand
+                                #ifdef STACK_OUTPUT
+                                    std::cout << "stack size : "<< operand_stack.size() <<"\n";
+                                #endif
+                                operatorNode = newNode(expression[i]); //create node with value of operator
+                                operand_stack.push(operatorNode); //char pushed
+
+                        }
+
+
+                    }
+
+            }       
+                
+            }
+            if(parathesisCnt >0){
+                //format error/ mismatched paraenth, throw error and exit. Annoying but necessary.
+                std::cout<<"Critical error. Mismatch on number of parenthesis/brackets remaining: "<<parathesisCnt<<"\n";
+                exit(0);
+            }
+            rootNode = operand_stack.top();
+            operand_stack.pop();
+            inorderEvaluate(rootNode, 3); //pop the pointer to the root node
+            inorderEvaluate(rootNode, 2);
+            inorderEvaluate(rootNode, 1);
+>>>>>>> 88ccb71... Fixing git upload, second temporary submission
         }
         
 
     }
 
+<<<<<<< HEAD
     void inorderEvaluate(expressTree * rootNode){
+=======
+    /**
+     * Function receives pointer to root node.
+     */ 
+    void inorderEvaluate(expressTree * rootNode, int currPriority){
+        //Each time we evaluate a node pair:
+        //    +
+        //  1   1
+        // We must update the root node value, e.g. new tree should be
+        //
+        //    2
+        // DC   DC
+        // Where DC stands for don't care, or we should NULL out
+        //
+        //As we traverse in order, we are looking for priority order of ops, and performing them first and modifying
+        // values. 
+        //
+
+>>>>>>> 88ccb71... Fixing git upload, second temporary submission
 
         //recursively traverse binary tree
         //only execute for non leaf nodes (leaf nodes have no children...)
         //because a operator 
         if(rootNode != NULL){
+<<<<<<< HEAD
             inorderEvaluate(rootNode->left);
+=======
+
+            //Inorder traverse all the way to the bottom of the left child of tree
+            inorderEvaluate(rootNode->left, currPriority);
+>>>>>>> 88ccb71... Fixing git upload, second temporary submission
             #ifdef EVAL_OUTPUT
                 std::cout << "Current Node eval: "<< rootNode->value << "\n";
             #endif
+            //we are at the bottom of Binary tree, start checking operators
             if(!rootNode->isLeaf){
+<<<<<<< HEAD
                 double op1Node = rootNode->right->value;
                 double op2Node = rootNode->left->value;
                 double result  = performOperation(op1Node,op2Node,(char)rootNode->value);
                 std::cout << "Expresion:"<<op1Node<<(char)rootNode->value<<op2Node<<", RESULT: "<<result<<"\n";
+=======
+                if(currPriority == 3){
+                    //handle exponents
+                    if(rootNode->value == '^'){
+                        if(rootNode->left->value == operatorChars[0] || rootNode->left->value == operatorChars[1] ||
+                        rootNode->left->value == operatorChars[2] || rootNode->left->value == operatorChars[3] ||
+                        rootNode->left->value == operatorChars[4]){
+                            if(rootNode->left->right == NULL){
+                                //we already used value, go further down left
+                                //TODO: change the way tree is built / fix the depth problem of the tree!!
+                                //only one step to solve "simple" inputs...
+                                double op1Node = rootNode->left->left->value;
+                                double op2Node = rootNode->right->value;
+                                double result  = performOperation(op1Node,op2Node,(char)rootNode->value);
+                                //std::cout << "RESULT: "<<result<<"\n";
+                                std::cout << "Expresion step:"<<op1Node<<" "<<(char)rootNode->value<<" "<<op2Node<<" RESULT: "<<result<<"\n";
+                                rootNode->left->left->value = result;   
+                            }else{
+                                double op1Node = rootNode->left->right->value;
+                                double op2Node = rootNode->right->value;
+                                double result  = performOperation(op1Node,op2Node,(char)rootNode->value);
+                                //std::cout << "RESULT: "<<result<<"\n";
+                                std::cout << "Expresion step:"<<op1Node<<" "<<(char)rootNode->value<<" "<<op2Node<<" RESULT: "<<result<<"\n";
+                                rootNode->left->right->value = result;
+                                rootNode->right = NULL; 
+                            }  
+                        }
+                        else{
+                            double op1Node = rootNode->left->value;
+                            double op2Node = rootNode->right->value;
+                            double result  = performOperation(op1Node,op2Node,(char)rootNode->value);
+                            //std::cout << "RESULT: "<<result<<"\n";
+                            std::cout << "Expresion step:"<<op1Node<<" "<<(char)rootNode->value<<" "<<op2Node<<" RESULT: "<<result<<"\n";
+                            rootNode->value = result;
+                        }
+                    }
+                }
+                if(currPriority == 2){
+                    //handle mult, div, modulo
+                    if(rootNode->value == '*' || rootNode->value == '/'){
+                        if(rootNode->left->value == operatorChars[0] || rootNode->left->value == operatorChars[1] ||
+                        rootNode->left->value == operatorChars[2] || rootNode->left->value == operatorChars[3] ||
+                        rootNode->left->value == operatorChars[4]){
+                            if(rootNode->left->right == NULL){
+                                //we already used value, go further down left
+                                //TODO: change the way tree is built / fix the depth problem of the tree!!
+                                //only one step to solve "simple" inputs...
+                                double op1Node = rootNode->left->left->value;
+                                double op2Node = rootNode->right->value;
+                                double result  = performOperation(op1Node,op2Node,(char)rootNode->value);
+                                //std::cout << "RESULT: "<<result<<"\n";
+                                std::cout << "Expresion step:"<<op1Node<<" "<<(char)rootNode->value<<" "<<op2Node<<" RESULT: "<<result<<"\n";
+                                rootNode->left->left->value = result;
+
+                            }else{
+                                double op1Node = rootNode->left->right->value;
+                                double op2Node = rootNode->right->value;
+                                double result  = performOperation(op1Node,op2Node,(char)rootNode->value);
+                                //std::cout << "RESULT: "<<result<<"\n";
+                                std::cout << "Expresion step:"<<op1Node<<" "<<(char)rootNode->value<<" "<<op2Node<<" RESULT: "<<result<<"\n";
+                                rootNode->left->right->value = result; 
+                                rootNode->right = NULL; 
+                            } 
+                        }
+                        else{
+                            double op1Node = rootNode->left->value;
+                            double op2Node = rootNode->right->value;
+                            double result  = performOperation(op1Node,op2Node,(char)rootNode->value);
+                            //std::cout << "RESULT: "<<result<<"\n";
+                            std::cout << "Expresion step:"<<op1Node<<" "<<(char)rootNode->value<<" "<<op2Node<<" RESULT: "<<result<<"\n";
+                            rootNode->value = result;
+                        }
+                    }
+                }
+                if(currPriority == 1){
+                    //handle +, -
+                    if(rootNode->value == '+' || rootNode->value == '-'){
+                        if(rootNode->left->value == operatorChars[0] || rootNode->left->value == operatorChars[1] ||
+                        rootNode->left->value == operatorChars[2] || rootNode->left->value == operatorChars[3] ||
+                        rootNode->left->value == operatorChars[4]){
+                            if(rootNode->left->right == NULL){
+                                //we already used value, go further down left
+                                //TODO: change the way tree is built / fix the depth problem of the tree!!
+                                //only one step to solve "simple" inputs...
+                                double op1Node = rootNode->left->left->value;
+                                double op2Node = rootNode->right->value;
+                                double result  = performOperation(op1Node,op2Node,(char)rootNode->value);
+                                //std::cout << "RESULT: "<<result<<"\n";
+                                std::cout << "Expresion step:"<<op1Node<<" "<<(char)rootNode->value<<" "<<op2Node<<" RESULT: "<<result<<"\n";
+                                rootNode->left->left->value = result; 
+
+                            }else{
+                                double op1Node = rootNode->left->right->value;
+                                double op2Node = rootNode->right->value;
+                                double result  = performOperation(op1Node,op2Node,(char)rootNode->value);
+                                //std::cout << "RESULT: "<<result<<"\n";
+                                std::cout << "Expresion step:"<<op1Node<<" "<<(char)rootNode->value<<" "<<op2Node<<" RESULT: "<<result<<"\n";
+                                rootNode->left->right->value = result;
+                                rootNode->right = NULL;  
+                            }  
+                        }
+                        else{
+                            double op1Node = rootNode->left->value;
+                            double op2Node = rootNode->right->value;
+                            double result  = performOperation(op1Node,op2Node,(char)rootNode->value);
+                            //std::cout << "RESULT: "<<result<<"\n";
+                            std::cout << "Expresion step:"<<op1Node<<" "<<(char)rootNode->value<<" "<<op2Node<<" RESULT: "<<result<<"\n";
+                            rootNode->value = result;
+                        }
+                    }
+                }
+
+                
+                // double op1Node = rootNode->left->value;
+                // double op2Node = rootNode->right->value;
+                // double result  = performOperation(op1Node,op2Node,(char)rootNode->value);
+                // //std::cout << "RESULT: "<<result<<"\n";
+                // std::cout << "Expresion step:"<<op1Node<<" "<<(char)rootNode->value<<" "<<op2Node<<" RESULT: "<<result<<"\n";
+                // rootNode->value = result;
+>>>>>>> 88ccb71... Fixing git upload, second temporary submission
             }
-            inorderEvaluate(rootNode->right);
+            inorderEvaluate(rootNode->right, currPriority);
+            //we have reached the end of inorder traversal.
         };
 
     }
