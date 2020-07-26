@@ -99,3 +99,5 @@ In order to utilize traditional CLI expression input: run program without any ar
 "Output: 2"
 ```
 
+#### TODO
+*May* come back to fix it at some point. It was interesting enough to work on that I think just re-implementing it into a pure C program, maybe with a gui to faciliate use, could be interesting and good practice. A lot of the problem seems prime for various algorithms I *learned* but never really implemented in school.would be interested in parallelizing parts of it!
