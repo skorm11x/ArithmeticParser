@@ -1,2 +1,5 @@
 testFiles/
 AParser
+*.o
+.buildconfig
+.vscode

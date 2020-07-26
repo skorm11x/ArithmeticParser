@@ -19,9 +19,9 @@
 // #ifndef EVAL_OUTPUT
 // #define EVAL_OUTPUT 
 // #endif
-#ifndef PRIORITY_DEBUG
-#define PRIORITY_DEBUG
-#endif
+// #ifndef PRIORITY_DEBUG
+// #define PRIORITY_DEBUG
+// #endif
 #ifndef FILE_EXT
 #define FILE_EXT ".csv" 
 #endif

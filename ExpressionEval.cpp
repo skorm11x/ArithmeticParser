@@ -175,7 +175,8 @@ class ExpressionEval{
             */
 
            int inPriority = 0;// flag to indicate if we are currently inside priority (,{,[
-           int parathesisCnt = 0;
+           int parathesisStart = 0; //track number of start parenth
+           int parathesisEnd = 0; //track number of end parenth
            int state = 0; //track num of operand/operator
             std::cout<<"Expression to evaluate: "<<expression<<"\n";
             //add all remaining parts
@@ -189,7 +190,8 @@ class ExpressionEval{
                             //valid characters and operators but incorrect priority sequence otherwise
                             if(expression[i] == '{' || expression[i] == '(' || expression[i] == '['){
                                 //Ignore everything after, incrementing count for every new one encountered
-                                ++parathesisCnt;
+                                ++parathesisStart;
+                                std::cout<<"paraenthesis start: "<<parathesisStart<<"\n";
                                 //look for (parathesisCnt # of }, ), or ] to "escape"
                                 //ex (2+23) : 1
                                 //((2+2)*5), ((2+2)1*5) where the second one has implicit multiplication!!
@@ -200,16 +202,16 @@ class ExpressionEval{
                                                         
 
                             }
-                            else{
-                                --parathesisCnt;
-                                //we encountered the end of parenthesis, we need to add this **valid** expression
-                                // to our tree
-                            }
+                            else if(expression[i] == '}' || expression[i] == ')' || expression[i] == ']'){
+                                //found end character, ensure that a start character has already been encountered. 
+                                ++parathesisEnd;
+                                std::cout<<"paraenthesis end: "<<parathesisStart<<"\n";
 
+                            }
 
                         }
                    }
-            if(parathesisCnt <1){
+            if(parathesisStart <1 && parathesisEnd < 1){
                 //if count is greater than 1 we are inside a parenth, ignore.
                 //character is not a priority indicator (parenthesis)/ operator
                 if(isdigit(expression[i]) || expression[i] == '.'||
@@ -345,12 +347,20 @@ class ExpressionEval{
 
                     }
 
+            }
+            else if(parathesisEnd > parathesisStart){
+                //end is never allowed to be greater than start e.g. 1+1+)2(
+                //format error/ mismatched paraenth, throw error and exit. Annoying but necessary.
+                std::cout<<"Critical error. Order of parenthesis incorrect, end: "<< parathesisEnd<<" start: "<<parathesisStart<<"\n";
+                exit(0);     
+
             }       
                 
             }
-            if(parathesisCnt >0){
+            std::cout<<"paraenthesis start: "<<parathesisStart<<" parenthesis end: "<<parathesisEnd<<"\n";
+            if(parathesisStart != parathesisEnd){
                 //format error/ mismatched paraenth, throw error and exit. Annoying but necessary.
-                std::cout<<"Critical error. Mismatch on number of parenthesis/brackets remaining: "<<parathesisCnt<<"\n";
+                std::cout<<"Critical error. Mismatch on number of parenthesis/brackets remaining: "<<parathesisStart<<" : "<<parathesisEnd<<"\n";
                 exit(0);
             }
             rootNode = operand_stack.top();
@@ -515,17 +525,18 @@ class ExpressionEval{
                 }
 
                 
-                // double op1Node = rootNode->left->value;
-                // double op2Node = rootNode->right->value;
-                // double result  = performOperation(op1Node,op2Node,(char)rootNode->value);
-                // //std::cout << "RESULT: "<<result<<"\n";
-                // std::cout << "Expresion step:"<<op1Node<<" "<<(char)rootNode->value<<" "<<op2Node<<" RESULT: "<<result<<"\n";
-                // rootNode->value = result;
-            }
+            //     // double op1Node = rootNode->left->value;
+            //     // double op2Node = rootNode->right->value;
+            //     // double result  = performOperation(op1Node,op2Node,(char)rootNode->value);
+            //     // //std::cout << "RESULT: "<<result<<"\n";
+            //     // std::cout << "Expresion step:"<<op1Node<<" "<<(char)rootNode->value<<" "<<op2Node<<" RESULT: "<<result<<"\n";
+            //     // rootNode->value = result;
+            // }
             inorderEvaluate(rootNode->right, currPriority);
             //we have reached the end of inorder traversal.
         };
 
+    }
     }
 
     
